@@ -97,6 +97,7 @@ new Animal('Giraffe', 'savanna', 'common', [[0,0],[0,1],[0,2],[0,3]])
 new Animal('Lion', 'savanna', 'rare', [[0,0],[1,0],[2,0]])
 new Animal('Elephant', 'savanna', 'rare', [[0,0],[1,0],[0,1]])
 new Animal('Gryphon', 'savanna', 'mythical', [[0,0],[2,0],[1,1]])
+new Animal('Rhinoceros', 'savanna', 'timeless', [[1,0],[0,1],[1,2]])
 
 new Animal('Bear', 'northern', 'common', [[0,0],[1,0],[1,1],[1,2]])
 new Animal('Skunk', 'northern', 'common', [[1,0],[2,0],[0,1],[1,1]])
@@ -170,3 +171,4 @@ Animal.all['saber-tooth'].shortName = 'Saber'
 Animal.all['sewer-turtle'].shortName = 'S. Turtle'
 Animal.all['jade-rabbit'].shortName = 'J. Rabbit'
 Animal.all['marsmallow'].shortName = 'Mallow'
+Animal.all['rhinoceros'].shortName = 'Rhino'
