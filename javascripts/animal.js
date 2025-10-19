@@ -89,6 +89,7 @@ new Animal('Crocodile', 'outback', 'common', [[0,0],[1,0],[2,0],[3,0]])
 new Animal('Koala', 'outback', 'rare', [[0,0],[1,0],[1,1]])
 new Animal('Cockatoo', 'outback', 'rare', [[0,0],[1,1],[1,2]])
 new Animal('Tiddalik', 'outback', 'mythical', [[1,0],[0,1],[2,1]])
+new Animal('Echidna', 'outback', 'timeless', [0,1],[1,1],[2,0]])
 
 new Animal('Zebra', 'savanna', 'common', [[1,0],[0,1],[2,1],[1,2]])
 new Animal('Hippo', 'savanna', 'common', [[0,0],[2,0],[0,2],[2,2]])
