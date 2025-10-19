@@ -162,7 +162,6 @@ new Animal('Rover', 'mars', 'rare', [[1,0],[0,1],[2,1]])
 new Animal('Martian', 'mars', 'rare', [[0,0],[2,0],[1,1]])
 new Animal('Marsmallow', 'mars', 'mythical', [[0,0],[0,2]])
 
-Animal.all['rhinoceros'].shortName = 'Rhino'
 Animal.all['diplodocus'].shortName = 'Diplo'
 Animal.all['stegosaurus'].shortName = 'Stego'
 Animal.all['triceratops'].shortName = 'Tricera'
