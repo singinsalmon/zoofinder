@@ -389,6 +389,11 @@ footer#footer .text-muted {
   border-color: #ff89fc;
 }
 /* line 18, ../sass/screen.scss */
+.animal-button.rarity-timeless {
+  background-color: #ffff99;
+  border-color: #ffff33;
+}
+/* line 18, ../sass/screen.scss */
 .animal-button.rarity-bux {
   background-color: #c5ffff;
   border-color: #78ffff;
