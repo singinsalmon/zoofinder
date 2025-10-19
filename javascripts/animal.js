@@ -81,7 +81,7 @@ new Animal('Pig', 'farm', 'common', [[0,0],[1,0],[0,1],[1,1]])
 new Animal('Horse', 'farm', 'rare', [[0,0],[0,1],[0,2]])
 new Animal('Cow', 'farm', 'rare', [[0,0],[1,0],[2,0]])
 new Animal('Unicorn', 'farm', 'mythical', [[0,0],[1,1],[2,1]])
-new Animal('Chicken', 'farm', 'timeless', [[2,0],[1,1],[2,0]]}
+new Animal('Chicken', 'farm', 'timeless', [[2,0],[1,1],[2,0]])
 
 new Animal('Kangaroo', 'outback', 'common', [[0,0],[1,1],[2,2],[3,3]])
 new Animal('Platypus', 'outback', 'common', [[0,0],[1,0],[1,1],[2,1]])
