@@ -97,6 +97,7 @@ new Animal('Giraffe', 'savanna', 'common', [[0,0],[0,1],[0,2],[0,3]])
 new Animal('Lion', 'savanna', 'rare', [[0,0],[1,0],[2,0]])
 new Animal('Elephant', 'savanna', 'rare', [[0,0],[1,0],[0,1]])
 new Animal('Gryphon', 'savanna', 'mythical', [[0,0],[2,0],[1,1]])
+new Animal('Rhinoceros', 'savanna', 'timeless', [[0,1],[1,0],[1,2]])
 
 new Animal('Bear', 'northern', 'common', [[0,0],[1,0],[1,1],[1,2]])
 new Animal('Skunk', 'northern', 'common', [[1,0],[2,0],[0,1],[1,1]])
@@ -161,6 +162,7 @@ new Animal('Rover', 'mars', 'rare', [[1,0],[0,1],[2,1]])
 new Animal('Martian', 'mars', 'rare', [[0,0],[2,0],[1,1]])
 new Animal('Marsmallow', 'mars', 'mythical', [[0,0],[0,2]])
 
+Animal.all['rhinoceros'].shortName = 'Rhino'
 Animal.all['diplodocus'].shortName = 'Diplo'
 Animal.all['stegosaurus'].shortName = 'Stego'
 Animal.all['triceratops'].shortName = 'Tricera'
