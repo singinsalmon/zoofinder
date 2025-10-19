@@ -243,5 +243,6 @@ footer#footer {
   @include rarity(common, #acffaa);
   @include rarity(rare, #9fdafd);
   @include rarity(mythical, #ffd5fe);
+  @include rarity(timeless, #ffff99);
   @include rarity(bux, #c5ffff);
 }
