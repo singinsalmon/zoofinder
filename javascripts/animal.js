@@ -105,6 +105,7 @@ new Animal('Beaver', 'northern', 'common', [[2,0],[0,1],[1,1],[2,2]])
 new Animal('Moose', 'northern', 'rare', [[0,0],[2,0],[1,1]])
 new Animal('Fox', 'northern', 'rare', [[0,0],[1,0],[2,1]])
 new Animal('Sasquatch', 'northern', 'mythical', [[0,0],[0,1]])
+new Animal('Otter', 'northern', 'timeless', [[0,0],[0,1],[1,1]])
 
 new Animal('Penguin', 'polar', 'common', [[1,0],[1,1],[0,2],[2,2]])
 new Animal('Seal', 'polar', 'common', [[0,0],[1,1],[3,1],[2,2]])
