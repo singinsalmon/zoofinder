@@ -112,6 +112,7 @@ new Animal('Muskox', 'polar', 'common', [[0,0],[1,0],[0,1],[2,1]])
 new Animal('Polar Bear', 'polar', 'rare', [[0,0],[2,0],[2,1]])
 new Animal('Walrus', 'polar', 'rare', [[0,0],[1,1],[2,1]])
 new Animal('Yeti', 'polar', 'mythical', [[0,0],[0,2]])
+new Animal('Snowy Owl', 'polar', 'timeless', [[0,0],[1,0],[1,1]])
 
 new Animal('Monkey', 'jungle', 'common', [[0,0],[2,0],[1,1],[3,1]])
 new Animal('Toucan', 'jungle', 'common', [[1,0],[0,1],[1,2],[1,3]])
