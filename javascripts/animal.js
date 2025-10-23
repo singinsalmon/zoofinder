@@ -75,6 +75,8 @@ var Animal = (function () {
 
 new Animal('Discobux', null, 'bux', [[0,0]])
 
+new Animal('Lizard', null, 'pet', [[0,0],[0,1],[0,2],[1,2],[2,2]])
+
 new Animal('Sheep', 'farm', 'common', [[0,0],[1,0],[2,0],[3,0]])
 new Animal('Rabbit', 'farm', 'common', [[0,0],[0,1],[0,2],[0,3]])
 new Animal('Pig', 'farm', 'common', [[0,0],[1,0],[0,1],[1,1]])
