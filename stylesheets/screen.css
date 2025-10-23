@@ -398,3 +398,8 @@ footer#footer .text-muted {
   background-color: #c5ffff;
   border-color: #78ffff;
 }
+/* line 18, ../sass/screen.scss */
+.animal-button.rarity-pet {
+  background-color: #ff33ff;
+  border-color: #ff3399;
+}
