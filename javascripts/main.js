@@ -63,66 +63,67 @@ $(function() {
   grid = new ZooGrid('#zoo')
   zoofinder = new ZooFinder(grid)
 
-  // animal list
-  var latestBiome
-  var latestBiomeGroup
-  var animalList = $('#animal-list')
+  // ---------- Animal list setup ----------
+var animalList = $('#animal-list')
+animalList.append('<option value="">Choose an animal...</option>')
 
-  animalList.append('<option value="">Choose an animal...</option>')
+// Define rarity order
+var rarityOrder = ['common', 'rare', 'mythical', 'timeless', 'pet', 'bux']
 
-  // Sort animals by rarity and then biome name
-var rarityOrder = ['common', 'rare', 'mythical', 'timeless', 'pet', 'bux'];
-
+// Sort animals by biome (alphabetical), then rarity, then name
 var sortedAnimals = _.orderBy(
   Animal.ordered,
   [
-    function(animal) { return animal.biome ? animal.biome.name : 'zzz'; }, // biome (null goes last)
-    function(animal) { return rarityOrder.indexOf(animal.rarity) !== -1 ? rarityOrder.indexOf(animal.rarity) : 999; }, // rarity
-    'name' // alphabetical by name
+    function(animal) { return animal.biome ? animal.biome.name : 'zzz' },   // biome (null last)
+    function(animal) { 
+      var index = rarityOrder.indexOf(animal.rarity)
+      return index !== -1 ? index : 999
+    },                                                                       // rarity
+    'name'                                                                     // name
   ],
-  ['asc', 'asc', 'asc'] // all ascending
-);
+  ['asc', 'asc', 'asc']
+)
 
-// Group animals by biome name (so null ones go last)
-var currentBiomeName = null;
-var currentGroup = null;
+// Group by biome and append to dropdown
+var currentBiomeName = null
+var currentGroup = null
 
 _.each(sortedAnimals, function(animal) {
-  var biomeName = animal.biome ? animal.biome.name : 'Other';
+  var biomeName = animal.biome ? animal.biome.name : 'Other'
 
-  // Start a new optgroup if biome changes
+  // start new optgroup if biome changes
   if (biomeName !== currentBiomeName) {
-    if (currentGroup) animalList.append(currentGroup);
-    currentGroup = $('<optgroup label="' + biomeName + '">');
-    currentBiomeName = biomeName;
+    if (currentGroup) animalList.append(currentGroup)
+    currentGroup = $('<optgroup label="' + biomeName + '">')
+    currentBiomeName = biomeName
   }
 
-  currentGroup.append(
-    '<option value="' + animal.identifier + '">' + animal.name + '</option>'
-  );
-});
+  currentGroup.append('<option value="' + animal.identifier + '">' + animal.name + '</option>')
+})
 
-// Append the last group
-if (currentGroup) animalList.append(currentGroup);
+// append the last group
+if (currentGroup) animalList.append(currentGroup)
 
 
-  animalList.change(function() {
-    var value = $(this).val()
+// ---------- Animal selection handler ----------
+animalList.change(function() {
+  var value = $(this).val()
+  grid.reset()
 
-    grid.reset()
+  if (!value) return
 
-    if (!value)
-      return
+  var animal = Animal.all[value]
+  zoofinder.setBiome(animal.biome)
 
-    var animal = Animal.all[value]
-    zoofinder.setBiome(animal.biome)
-
-    _.each(animal.tiles, function(tile) {
-      var cell = grid.at(tile[0], tile[1])
+  // Place tiles safely
+  _.each(animal.tiles, function(tile) {
+    var cell = grid.at(tile[0], tile[1])
+    if (cell) {                   // <-- safe check
       cell.setSelected(true)
       cell.setAnimal(animal)
-    })
+    }
   })
+})
 
   // biome list
   _.each(Biome.ordered, function(biome) {
