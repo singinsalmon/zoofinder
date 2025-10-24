@@ -211,15 +211,38 @@ var ZooFinder = (function () {
     })
   }
 
-  ZooFinder.prototype.setBiome = function (biome) {
-    var self = this
+  ZooFinder.prototype.setBiome = function(biome) {
+  this.reset()
+  this.biome = biome
+  this.grid.setBiome(biome)
 
-    this.reset()
-    this.biome = biome
-    this.grid.setBiome(biome)
+  // skip if biome is null
+  if (!biome) return
 
-    this.animals = Animal.inBiome(biome)
-    this.animals.push(Animal.all['discobux'])
+  var animalsInBiome = Animal.inBiome(biome)
+  
+  // include Disco Bux (or other null-biome animals)
+  if (Animal.all['discobux']) animalsInBiome.push(Animal.all['discobux'])
+
+  _.each(animalsInBiome, function(animal) {
+    _.each(animal.tiles, function(tile) {
+      var x = tile[0], y = tile[1]
+
+      // only place if coordinates are within the grid
+      if (x >= 0 && x < this.grid.columns && y >= 0 && y < this.grid.rows) {
+        var cell = this.grid.at(x, y)
+        if (cell) {
+          cell.setSelected(true)
+          cell.setAnimal(animal)
+        }
+      }
+    }, this)
+  }, this)
+
+  // save the animals currently in the biome
+  this.animals = animalsInBiome
+}
+
 
     _.each(this.animals, function (animal, index) {
       self.animalButtons[index].setAnimal(animal)
