@@ -2,24 +2,22 @@
 
 function ZooFinder(grid) {
   this.grid = grid;
-  this.animalButtons = [];
+  this.animalButtons = []; // should be set from HTML
   this.animals = [];
   this.biome = null;
 }
 
-// Private helper function to calculate all possible arrangements
+// Private helper: get current animal positions and empty tiles
 ZooFinder.prototype._allPossibleArrangements = function() {
   var knownAnimalTiles = {};
   var emptyTiles = [];
 
   this.grid.each(function(cell, col, row) {
-    var tiles;
     if (cell.animal) {
-      tiles = knownAnimalTiles[cell.animal.identifier];
-      if (!tiles) {
-        tiles = knownAnimalTiles[cell.animal.identifier] = [];
+      if (!knownAnimalTiles[cell.animal.identifier]) {
+        knownAnimalTiles[cell.animal.identifier] = [];
       }
-      tiles.push([col, row]);
+      knownAnimalTiles[cell.animal.identifier].push([col, row]);
     } else {
       emptyTiles.push([col, row]);
     }
@@ -28,32 +26,13 @@ ZooFinder.prototype._allPossibleArrangements = function() {
   return { knownAnimalTiles: knownAnimalTiles, emptyTiles: emptyTiles };
 };
 
-// Public method to display probabilities
+// Display probabilities placeholder (implement your own logic)
 ZooFinder.prototype.displayProbabilities = function() {
   var arrangements = this._allPossibleArrangements();
-  // Further processing using arrangements
+  console.log("Probabilities calculation placeholder", arrangements);
 };
 
-// Public method to set the biome
-ZooFinder.prototype.setBiome = function(biome) {
-  var self = this;
-
-  this.reset();
-  this.biome = biome;
-  this.grid.setBiome(biome);
-
-  this.animals = Animal.inBiome(biome);
-  this.animals.push(Animal.all['discobux']);
-
-  _.each(this.animals, function(animal, index) {
-    // Only set animal if the button exists
-    if (self.animalButtons[index]) {
-      self.animalButtons[index].setAnimal(animal);
-    }
-  });
-}; // <-- closing brace added here
-
-// Public method to reset the grid
+// Reset grid
 ZooFinder.prototype.reset = function() {
   this.grid.each(function(cell) {
     cell.setSelected(false);
@@ -61,9 +40,48 @@ ZooFinder.prototype.reset = function() {
   });
 };
 
-// Public method to arrange animals
-ZooFinder.prototype.arrangeAnimals = function() {
-  // Implementation for arranging animals
+// Set biome and populate animal buttons safely
+ZooFinder.prototype.setBiome = function(biome) {
+  var self = this;
+  this.reset();
+  this.biome = biome;
+  this.grid.setBiome(biome);
+
+  this.animals = Animal.inBiome(biome).slice(); // copy array
+  this.animals.push(Animal.all['discobux']);    // always include discobux
+
+  // Populate animal buttons safely
+  _.each(this.animalButtons, function(button, index) {
+    if (self.animals[index]) {
+      button.setAnimal ? button.setAnimal(self.animals[index]) : button.data('animal', self.animals[index]);
+    } else {
+      button.setAnimal ? button.setAnimal(null) : button.data('animal', null);
+    }
+  });
 };
 
-// Additional methods as needed
+// Arrange animals placeholder (implement your own logic)
+ZooFinder.prototype.arrangeAnimals = function() {
+  var self = this;
+  if (!this.animals || this.animals.length === 0) return;
+
+  // Simple example: place each animal starting from top-left
+  var row = 0, col = 0;
+  _.each(this.animals, function(animal) {
+    _.each(animal.tiles, function(tile) {
+      var x = col + tile[0], y = row + tile[1];
+      if (x < self.grid.columns && y < self.grid.rows) {
+        var cell = self.grid.at(x, y);
+        if (cell) {
+          cell.setSelected(true);
+          cell.setAnimal(animal);
+        }
+      }
+    });
+    col += 1;
+    if (col >= self.grid.columns) {
+      col = 0;
+      row += 1;
+    }
+  });
+};
