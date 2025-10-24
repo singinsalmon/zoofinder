@@ -45,12 +45,13 @@ ZooFinder.prototype.setBiome = function(biome) {
   this.animals = Animal.inBiome(biome);
   this.animals.push(Animal.all['discobux']);
 
-_.each(this.animals, function(animal, index) {
-  // Only set animal if the button exists
-  if (self.animalButtons[index]) {
-    self.animalButtons[index].setAnimal(animal);
-  }
-});
+  _.each(this.animals, function(animal, index) {
+    // Only set animal if the button exists
+    if (self.animalButtons[index]) {
+      self.animalButtons[index].setAnimal(animal);
+    }
+  });
+}; // <-- closing brace added here
 
 // Public method to reset the grid
 ZooFinder.prototype.reset = function() {
