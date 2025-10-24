@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZooFinder</title>
+
+  <!-- CSS -->
   <link rel="stylesheet" href="stylesheets/screen.css">
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
   <style>
     /* Button colors for each rarity */
     .animal-button { width: 100%; height: 80px; margin: 5px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; }
@@ -69,10 +72,11 @@
 
   </div>
 
-  <!-- Scripts -->
-  <script src="javascripts/jquery.min.js"></script>
-  <script src="javascripts/underscore.js"></script>
-  <script src="javascripts/fastclick.js"></script>
+  <!-- Scripts at the end so everything loads correctly -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
   <script src="javascripts/animal.js"></script>
   <script src="javascripts/zoofinder.js"></script>
   <script src="javascripts/main.js"></script>
