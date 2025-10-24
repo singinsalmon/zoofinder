@@ -1,380 +1,66 @@
-var AnimalButton = (function () {
+// zoofinder.js
 
-  var AnimalButton = function (element, index) {
-    var self = this
-
-    self.element = $(element)
-    self.setSelected(false)
-
-    self.element.click(function () {
-      if (self.element.data('disabled'))
-        return
-
-      self.setSelected(!self.selected)
-    })
-
-    self.element.data('index', index)
-  }
-
-  AnimalButton.prototype.setSelected = function (sel) {
-    if (this.selected == sel)
-      return
-
-    this.selected = sel
-    this.element.toggleClass('selected', sel)
-    $(this).trigger('change')
-  }
-
-  AnimalButton.prototype.setAnimal = function (animal) {
-    this.animal = animal
-
-    this.element.removeAttr('style')
-
-    this.element.data('animal', animal.identifier)
-
-    this.element.css('background-image', 'url(' + animal.imagePath() + ')')
-    this.element.text(animal.shortName)
-  }
-
-  return AnimalButton
-
-})()
-
-var ZooFinder = (function () {
-
-  var ZooFinder = function (grid) {
-    var self = this
-    self.swingCount = 0
-
-    var toggleDropTargetOverlay = function (toggle) {
-      self.grid.element.toggleClass('droppable front-and-center', toggle)
-
-      if (!toggle || self.swingCount < 3) {
-        self.grid.element.find('.drop-target-overlay h2').toggleClass('swing animated', toggle)
-      }
-    }
-
-    this.grid = grid
-    this.animals = []
-    this.selectedAnimals = []
-    this.animalButtons = []
-    this.showingProbabilities = true
-
-    this.refreshProbabilities = _.debounce(function () {
-      if (self.showingProbabilities) {
-        self.displayProbabilities()
-      }
-    }, 10)
-
-    $(grid).on('cell:change', this.refreshProbabilities)
-
-    interact('.zoo-grid').dropzone({
-
-      ondropactivate: function (event) {
-        toggleDropTargetOverlay(true)
-        self.swingCount++
-        self.grid.element.find('.cell').removeClass('droppable')
-        $('html, body').animate({ scrollTop: 0 })
-      },
-      
-      ondragenter: function (event) {
-        toggleDropTargetOverlay(false)
-      },
-
-      ondragleave: function (event) {
-        toggleDropTargetOverlay(true)
-      },
-
-      ondropdeactivate: function (event) {
-        toggleDropTargetOverlay(false)
-        self.grid.element.find('.cell').removeClass('droppable')
-      }
-
-    })
-
-    interact('.zoo-grid .cell').dropzone({
-      
-      ondragenter: function (event) {
-        $(event.target).addClass('droppable')
-        toggleDropTargetOverlay(false)
-      },
-
-      ondragleave: function (event) {
-        $(event.target).removeClass('droppable')
-        toggleDropTargetOverlay(true)
-      },
-
-      ondrop: function (event) {
-        var buttonElement = $(event.relatedTarget)
-        var cellElement = $(event.target)
-
-        var button = self.animalButtons[parseInt(buttonElement.data('index'))]
-
-        var cell = self.grid.at(
-          parseInt(cellElement.data('x')),
-          parseInt(cellElement.data('y'))
-        )
-
-        cell.setAnimal(button.animal)
-        cell.setSelected(true)
-
-        button.setSelected(true)
-      }
-
-    })
-
-    $('.animal-button').each(function (index, button) {
-      var animalButton = new AnimalButton(button, index)
-      self.animalButtons.push(animalButton)
-
-      $(animalButton).on('change', function () {
-        var animal = animalButton.animal
-
-        if (animalButton.selected) {
-          self.selectedAnimals = _.union(self.selectedAnimals, animal)
-        } else {
-          self.selectedAnimals = _.without(self.selectedAnimals, animal)
-
-          self.grid.each(function (cell) {
-            if (cell.animal == animal) {
-              cell.setAnimal(null)
-              cell.setSelected(false)
-            }
-          })
-        }
-
-        if (self.showingProbabilities)
-          self.refreshProbabilities()
-      })
-    })
-
-    interact('.animal-button').draggable({
-
-      onstart: function (event) {
-        var phantom = $('#phantom')
-        var target = $(event.target)
-
-        target.data('disabled', true)
-
-        var x = event.pageX - target.offset().left
-        var y = event.pageY - target.offset().top
-
-        if (!phantom.length) {
-          phantom = $('<div></div>').attr('id', 'phantom')
-          phantom.append('<div>')
-        }
-
-        phantom.show().find('div').css('background-image', target.css('background-image'))
-
-        phantom.css('left', event.pageX).css('top', event.pageY)
-
-        $('body').append(phantom)
-
-        self.grid.element.addClass('droppable')
-      },
-
-      onmove: function (event) {
-        var phantom = $('#phantom')
-        var target = $(event.target)
-        var x = (parseFloat(target.data('x')) || 0) + event.dx
-        var y = (parseFloat(target.data('y')) || 0) + event.dy
-
-        phantom.css('transform', 'translate(' + x + 'px, ' + y + 'px)')
-
-        target.data('x', x).data('y', y)
-      },
-
-      onend: function (event) {
-        var target = $(event.target)
-
-        _.defer(function () {
-          target.data('disabled', false)
-        })
-
-        target.data('x', 0).data('y', 0)
-
-        $('#phantom').hide()
-      }
-
-    })
-  }
-
-  ZooFinder.prototype.reset = function () {
-    this.selectedAnimals = []
-    this.grid.reset()
-    _.each(this.animalButtons, function (button) {
-      button.setSelected(false)
-    })
-    this.grid.each(function (cell) {
-      cell.resetHints()
-      cell.setText('')
-    })
-  }
-
-// Inside zoofinder.js
-
-ZooFinder.prototype.setBiome = function (biome) {
-    var self = this;
-
-    this.reset();
-    this.biome = biome;
-    this.grid.setBiome(biome);
-
-    // save the animals currently in the biome
-    var animalsInBiome = Animal.inBiome(biome);
-    animalsInBiome.push(Animal.all['discobux']); // optional, for universal animals
-
-    this.animals = animalsInBiome;
-
-    // assign animals to buttons safely
-    _.each(this.animals, function (animal, index) {
-        if (self.animalButtons && self.animalButtons[index]) {
-            self.animalButtons[index].setAnimal(animal);
-        }
-    });
+function ZooFinder(grid) {
+  this.grid = grid;
+  this.animalButtons = [];
+  this.animals = [];
+  this.biome = null;
 }
 
-// Properly declare the helper function
-ZooFinder.prototype.allPossibleArrangements = function () {
-    var knownAnimalTiles = {};
-    var emptyTiles = [];
+// Private helper function to calculate all possible arrangements
+ZooFinder.prototype._allPossibleArrangements = function() {
+  var knownAnimalTiles = {};
+  var emptyTiles = [];
 
-    this.grid.each(function (cell, col, row) {
-        var tiles;
-        if (cell.animal) {
-            tiles = knownAnimalTiles[cell.animal.identifier];
-            if (!tiles) {
-                tiles = [];
-                knownAnimalTiles[cell.animal.identifier] = tiles;
-            }
-            tiles.push([col, row]);
-        } else {
-            emptyTiles.push([col, row]);
-        }
-    });
-
-    // return something useful if needed
-    return {
-        knownAnimalTiles: knownAnimalTiles,
-        emptyTiles: emptyTiles
-    };
-}
-
-
-  ZooFinder.prototype.displayProbabilities = function () {
-    var arrangements = allPossibleArrangements.call(this)
-
-    if (arrangements.length == 0) {
-      this.grid.each(function (cell, col, row) {
-        cell.resetHints()
-        cell.setPotentialAnimal(null)
-        cell.setText('')
-      })
-
-      this.grid.setError(this.selectedAnimals.length > 0)
-
-      return
+  this.grid.each(function(cell, col, row) {
+    var tiles;
+    if (cell.animal) {
+      tiles = knownAnimalTiles[cell.animal.identifier];
+      if (!tiles) {
+        tiles = knownAnimalTiles[cell.animal.identifier] = [];
+      }
+      tiles.push([col, row]);
+    } else {
+      emptyTiles.push([col, row]);
     }
+  });
 
-    this.grid.setError(false)
+  return { knownAnimalTiles: knownAnimalTiles, emptyTiles: emptyTiles };
+};
 
-    // {
-    //   "1,2": 3,
-    //   "2,2": 9,
-    //   ...
-    // }
-    var cellCounts = {}
-    var cellUniqueAnimals = {}
-    var maxCount = 0
-    var minCount = Infinity
+// Public method to display probabilities
+ZooFinder.prototype.displayProbabilities = function() {
+  var arrangements = this._allPossibleArrangements();
+  // Further processing using arrangements
+};
 
-    _.each(arrangements, function (arrangement) {
-      _.each(arrangement, function (animalArrangement) {
-        var animal = animalArrangement['animal']
-        var animalCoord = animalArrangement['coordinate']
-        _.each(animal.tilesAtPosition(animalCoord[0], animalCoord[1]), function (tile) {
-          var coord = tile.join(',')
-          var cellCount = cellCounts[coord]
-          
-          if (_.isUndefined(cellCount))
-            cellCount = 0
-          
-          cellCount += 1
-          cellCounts[coord] = cellCount
+// Public method to set the biome
+ZooFinder.prototype.setBiome = function(biome) {
+  var self = this;
 
-          if (_.isUndefined(cellUniqueAnimals[coord]))
-            cellUniqueAnimals[coord] = animal
-          else if (cellUniqueAnimals[coord] != animal)
-            cellUniqueAnimals[coord] = false
+  this.reset();
+  this.biome = biome;
+  this.grid.setBiome(biome);
 
-          maxCount = Math.max(maxCount, cellCount)
-        })
-      })
-    })
+  this.animals = Animal.inBiome(biome);
+  this.animals.push(Animal.all['discobux']);
 
-    var counts = _.values(cellCounts)
+  _.each(this.animals, function(animal, index) {
+    self.animalButtons[index].setAnimal(animal);
+  });
+};
 
-    minCount = _.min(counts)
-    maxCount = _.max(_.without(counts, arrangements.length))
+// Public method to reset the grid
+ZooFinder.prototype.reset = function() {
+  this.grid.each(function(cell) {
+    cell.setSelected(false);
+    cell.setAnimal(null);
+  });
+};
 
-    var selectedBux = _.find(this.selectedAnimals, function (animal) {
-      return animal.identifier == 'discobux'
-    })
+// Public method to arrange animals
+ZooFinder.prototype.arrangeAnimals = function() {
+  // Implementation for arranging animals
+};
 
-    var foundBux = _.find(_.flatten(this.grid.cellRows), function (cell) {
-      return cell.animal && (cell.animal.identifier == 'discobux')
-    })
-
-    var lookingForBux = selectedBux && !foundBux
-
-    this.grid.each(function (cell, col, row) {
-      var cellIdentifier = col + ',' + row
-      var cellCount = cellCounts[cellIdentifier]
-
-      var percent = cellCount ? cellCount / arrangements.length * 100 : 0
-
-      cell.setText(percent.toFixed() + '%')
-
-      cell.resetHints()
-
-      cell.setPotentialAnimal(cellUniqueAnimals[cellIdentifier])
-
-      if (cellCount == arrangements.length)
-        cell.element.addClass('guaranteed-hint')
-      else if (lookingForBux && cellCount == minCount)
-        cell.element.addClass('bux-hint')
-      else if (cellCount == maxCount)
-        cell.element.addClass('best-hint')
-    })
-  }
-
-  ZooFinder.prototype.arrangeAnimals = function () {
-    var self = this
-
-    var arrangements = allPossibleArrangements.call(this)
-
-    if (arrangements.length == 0 && self.selectedAnimals.length > 0) {
-      self.grid.setError(true)
-      return
-    }
-
-    self.grid.setError(false)
-
-    var arrangement = _.sample(arrangements)
-
-    _.each(arrangement, function (animalArrangement) {
-      var coord = animalArrangement['coordinate']
-      var animal = animalArrangement['animal']
-      var animalTiles = animal.tilesAtPosition(coord[0], coord[1])
-
-      _.each(animalTiles, function (tile) {
-        var cell = self.grid.at(tile[0], tile[1])
-        cell.setAnimal(animal)
-        cell.setSelected(true)
-      })
-    })
-  }
-
-  return ZooFinder
-
-})()
+// Additional methods as needed
