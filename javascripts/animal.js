@@ -63,11 +63,11 @@ var Animal = (function () {
   Animal.all = keyedAnimals
   Animal.ordered = orderedAnimals
 
-  Animal.inBiome = function (biome) {
-    return _.select(Animal.ordered, function (animal) {
-      return animal.biome == biome
-    })
-  }
+ Animal.inBiome = function (biome) {
+  return _.select(Animal.ordered, function (animal) {
+    return animal.biome == biome || animal.biome == null
+  })
+}
 
   return Animal
 
