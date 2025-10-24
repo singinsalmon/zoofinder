@@ -70,7 +70,18 @@ $(function() {
 
   animalList.append('<option value="">Choose an animal...</option>')
 
-  _.each(Animal.ordered, function(animal) {
+  // Sort animals by rarity and then biome name
+var rarityOrder = ['common', 'rare', 'mythical', 'timeless', 'pet', 'bux'];
+
+var sortedAnimals = _.sortBy(Animal.ordered, function(animal) {
+  var rarityIndex = rarityOrder.indexOf(animal.rarity);
+  if (rarityIndex === -1) rarityIndex = 999; // unknown rarities at the end
+  var biomeName = animal.biome ? animal.biome.name : ''; // handle null biome
+  return [biomeName, rarityIndex, animal.name];
+});
+
+_.each(sortedAnimals, function(animal) {
+
     if (animal.biome != latestBiome) {
       if (latestBiomeGroup)
         animalList.append(latestBiomeGroup)
