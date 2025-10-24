@@ -80,22 +80,27 @@ var sortedAnimals = _.sortBy(Animal.ordered, function(animal) {
   return [biomeName, rarityIndex, animal.name];
 });
 
+// Group animals by biome name (so null ones go last)
+var currentBiomeName = null;
+var currentGroup = null;
+
 _.each(sortedAnimals, function(animal) {
+  var biomeName = animal.biome ? animal.biome.name : 'Other';
 
-    if (animal.biome != latestBiome) {
-      if (latestBiomeGroup)
-        animalList.append(latestBiomeGroup)
+  // Start a new optgroup if biome changes
+  if (biomeName !== currentBiomeName) {
+    if (currentGroup) animalList.append(currentGroup);
+    currentGroup = $('<optgroup label="' + biomeName + '">');
+    currentBiomeName = biomeName;
+  }
 
-      latestBiomeGroup = $('<optgroup label="' + animal.biome.name + '">')
-      latestBiome = animal.biome
-    }
+  currentGroup.append(
+    '<option value="' + animal.identifier + '">' + animal.name + '</option>'
+  );
+});
 
-    var parent = latestBiomeGroup ? latestBiomeGroup : animalList
-    parent.append('<option value="' + animal.identifier + '">' + animal.name + '</option>')
-  })
-
-  if (latestBiomeGroup)
-    animalList.append(latestBiomeGroup)
+// Append the last group
+if (currentGroup) animalList.append(currentGroup);
 
 
   animalList.change(function() {
