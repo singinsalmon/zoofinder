@@ -72,4 +72,83 @@ $(function() {
   // Sort animals: name → rarity → biome
   var sortedAnimals = _.sortBy(
     _.sortBy(
-      _.sortBy(Animal.ordered, 'name'), // sort by n_
+      _.sortBy(Animal.ordered, 'name'), // sort by name first
+      function(a) { 
+        var idx = rarityOrder.indexOf(a.rarity);
+        return idx !== -1 ? idx : 999;  // unknown rarities last
+      }
+    ),
+    function(a) { 
+      return a.biome ? a.biome.name : 'zzz';  // null biome last
+    }
+  );
+
+  // Group animals by biome for dropdown
+  var currentBiomeName = null;
+  var currentGroup = null;
+
+  _.each(sortedAnimals, function(animal) {
+    var biomeName = animal.biome ? animal.biome.name : 'Other';
+
+    if (biomeName !== currentBiomeName) {
+      if (currentGroup) animalList.append(currentGroup);
+      currentGroup = $('<optgroup label="' + biomeName + '">');
+      currentBiomeName = biomeName;
+    }
+
+    currentGroup.append('<option value="' + animal.identifier + '">' + animal.name + '</option>');
+  });
+
+  if (currentGroup) animalList.append(currentGroup);
+
+  // ----- Animal Selection Handler -----
+  animalList.change(function() {
+    var value = $(this).val();
+    grid.reset();
+
+    if (!value) return;
+
+    var animal = Animal.all[value];
+
+    // Safely set biome
+    if (animal.biome) {
+      zoofinder.setBiome(animal.biome);
+    }
+
+    // Place animal tiles safely
+    _.each(animal.tiles, function(tile) {
+      var x = tile[0], y = tile[1];
+
+      if (x >= 0 && x < grid.columns && y >= 0 && y < grid.rows) {
+        var cell = grid.at(x, y);
+        if (cell) {
+          cell.setSelected(true);
+          cell.setAnimal(animal);
+        }
+      }
+    });
+  });
+
+  // ----- Biome Dropdown -----
+  _.each(Biome.ordered, function(biome) {
+    $('#biome-list').append('<option value="' + biome.identifier + '">' + biome.name + '</option>');
+  });
+
+  $('#biome-list').change(function() {
+    var biome = Biome.all[$(this).val()];
+    if (biome) zoofinder.setBiome(biome);
+  });
+
+  $('#biome-list').trigger('change');
+
+  if (!grid.biome) {
+    zoofinder.setBiome(Biome.all['farm']);
+  }
+
+  // ----- Debug: Generate animal code -----
+  $('#generate-output').click(function() {
+    var animalName = prompt('Animal name');
+    var output = 'new Animal(\'' + animalName + '\', undefined, undefined, ' + JSON.stringify(Animal.fromShape(animalName, shapeInGrid()).tiles) + ')' + '\n';
+    $('textarea#debug-output').text(output).focus().select();
+  });
+});
