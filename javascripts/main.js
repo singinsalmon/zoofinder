@@ -1,35 +1,63 @@
 var grid, zoofinder;
 
-$(function() {
-  FastClick.attach(document.body);
-  if ('ontouchstart' in document) $('body').removeClass('no-touch');
+var shapeInGrid = function() {
+  var minRow = grid.rows,
+      maxRow = 0,
+      minCol = grid.columns,
+      maxCol = 0;
 
-  // Initialize grid and zoo
-  grid = new ZooGrid('#zoo');
-  zoofinder = new ZooFinder(grid);
-
-  // ---------- Link roster buttons ----------
-  zoofinder.animalButtons = [];
-  $('#roster-container .animal-button').each(function() {
-    var $el = $(this);
-    zoofinder.animalButtons.push({
-      setAnimal: function(animal) {
-        $el.data('animal', animal);
-        if (animal) {
-          $el.text(animal.name);
-        } else {
-          $el.text('');
-        }
+  var gridValues = _.map(grid.cellRows, function(row, rowIndex) {
+    return _.map(row, function(cell, colIndex) {
+      if (cell.selected) {
+        minRow = Math.min(rowIndex, minRow);
+        maxRow = Math.max(rowIndex, maxRow);
+        minCol = Math.min(colIndex, minCol);
+        maxCol = Math.max(colIndex, maxCol);
+        return 1;
       }
+      return 0;
     });
   });
 
-  // ---------- Populate animal dropdown ----------
+  // reject empty rows
+  gridValues = _.reject(gridValues, function(row, rowIndex) {
+    return rowIndex < minRow || rowIndex > maxRow;
+  });
+
+  // slice empty columns
+  gridValues = _.map(gridValues, function(row) {
+    return row.slice(minCol, maxCol + 1);
+  });
+
+  return gridValues;
+};
+
+var formatMatrix = function(matrix, trueFormat, falseFormat) {
+  trueFormat = _.isUndefined(trueFormat) ? 'X' : trueFormat;
+  falseFormat = _.isUndefined(falseFormat) ? '.' : falseFormat;
+  return _.map(matrix, function(row) {
+    return _.map(row, function(value) {
+      return value ? trueFormat : falseFormat;
+    }).join('');
+  }).join('\n');
+};
+
+$(function() {
+  FastClick.attach(document.body);
+  if ('ontouchstart' in document) {
+    $('body').removeClass('no-touch');
+  }
+
+  // initialize grid and zoofinder
+  grid = new ZooGrid('#zoo');
+  zoofinder = new ZooFinder(grid);
+
+  // ---------- Animal List Dropdown ----------
   var animalList = $('#animal-list');
-  animalList.empty().append('<option value="">Choose an animal...</option>');
+  animalList.append('<option value="">Choose an animal...</option>');
 
+  // Sort animals by biome, then rarity, then name
   var rarityOrder = ['common','rare','mythical','timeless','pet','bux'];
-
   var sortedAnimals = _.sortBy(Animal.ordered, function(a) {
     var biomeName = a.biome ? a.biome.name : 'zzz';
     var rarityIndex = rarityOrder.indexOf(a.rarity);
@@ -37,31 +65,33 @@ $(function() {
     return [biomeName, rarityIndex, a.name];
   });
 
-  var currentGroup = null, currentBiome = null;
+  // Group by biome
+  var currentGroup = null;
+  var currentBiome = null;
   _.each(sortedAnimals, function(a) {
     var biomeName = a.biome ? a.biome.name : 'Other';
     if (biomeName !== currentBiome) {
       if (currentGroup) animalList.append(currentGroup);
-      currentGroup = $('<optgroup label="' + biomeName + '">');
+      currentGroup = $('<optgroup label="'+biomeName+'">');
       currentBiome = biomeName;
     }
-    currentGroup.append('<option value="' + a.identifier + '">' + a.name + '</option>');
+    currentGroup.append('<option value="'+a.identifier+'">'+a.name+'</option>');
   });
   if (currentGroup) animalList.append(currentGroup);
 
-  // ---------- Animal selection ----------
+  // Handle animal selection
   animalList.change(function() {
-    var value = $(this).val();
+    var val = $(this).val();
     grid.reset();
-    if (!value) return;
+    if (!val) return;
 
-    var animal = Animal.all[value];
+    var animal = Animal.all[val];
     if (animal.biome) zoofinder.setBiome(animal.biome);
 
     _.each(animal.tiles, function(tile) {
       var x = tile[0], y = tile[1];
-      if (x >= 0 && x < grid.columns && y >= 0 && y < grid.rows) {
-        var cell = grid.at(x, y);
+      if (x >=0 && x < grid.columns && y >=0 && y < grid.rows) {
+        var cell = grid.at(x,y);
         if (cell) {
           cell.setSelected(true);
           cell.setAnimal(animal);
@@ -70,41 +100,27 @@ $(function() {
     });
   });
 
-  // ---------- Biome selection ----------
+  // ---------- Biome Dropdown ----------
   _.each(Biome.ordered, function(b) {
-    $('#biome-list').append('<option value="' + b.identifier + '">' + b.name + '</option>');
+    $('#biome-list').append('<option value="'+b.identifier+'">'+b.name+'</option>');
   });
   $('#biome-list').change(function() {
     zoofinder.setBiome(Biome.all[$(this).val()]);
-  }).trigger('change');
+  });
+  $('#biome-list').trigger('change');
 
   if (!grid.biome) zoofinder.setBiome(Biome.all['farm']);
 
-  // ---------- Buttons ----------
-  $('#arrange-button').click(function() { zoofinder.arrangeAnimals(); });
-  $('#reset-button').click(function() { zoofinder.reset(); });
-  $('#probability-button').click(function() { zoofinder.displayProbabilities(); });
+  // ---------- Grid Buttons ----------
+  $('#arrange-button').click(function(){ zoofinder.arrangeAnimals(); });
+  $('#reset-button').click(function(){ zoofinder.reset(); });
+  $('#probability-button').click(function(){ zoofinder.displayProbabilities(); });
 
-  // ---------- Generate animal debug ----------
+  // ---------- Animal Generator ----------
   $('#generate-output').click(function() {
     var animalName = prompt('Animal name');
-    var output = 'new Animal(\'' + animalName + '\', undefined, undefined, ' +
-                 JSON.stringify(Animal.fromShape(animalName, shapeInGrid()).tiles) + ')\n';
+    var tiles = Animal.fromShape(animalName, shapeInGrid()).tiles;
+    var output = "new Animal('"+animalName+"', undefined, undefined, "+JSON.stringify(tiles)+")\n";
     $('textarea#debug-output').text(output).focus().select();
   });
-
-  // ---------- Shape helper ----------
-  function shapeInGrid() {
-    var minRow = grid.rows, maxRow = 0, minCol = grid.columns, maxCol = 0;
-    var gridValues = _.map(grid.cellRows, function(row, r) {
-      return _.map(row, function(cell, c) {
-        if (cell.selected) { minRow = Math.min(r,minRow); maxRow=Math.max(r,maxRow); minCol=Math.min(c,minCol); maxCol=Math.max(c,maxCol); return 1; }
-        return 0;
-      });
-    });
-
-    gridValues = _.reject(gridValues, function(row,r){ return r<minRow || r>maxRow; });
-    gridValues = _.map(gridValues, function(row){ return row.slice(minCol,maxCol+1); });
-    return gridValues;
-  }
 });
