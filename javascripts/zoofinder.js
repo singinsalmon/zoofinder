@@ -211,63 +211,55 @@ var ZooFinder = (function () {
     })
   }
 
-  ZooFinder.prototype.setBiome = function(biome) {
-  this.reset()
-  this.biome = biome
-  this.grid.setBiome(biome)
+// Inside zoofinder.js
 
-  // skip if biome is null
-  if (!biome) return
+ZooFinder.prototype.setBiome = function (biome) {
+    var self = this;
 
-  var animalsInBiome = Animal.inBiome(biome)
-  
-  // include Disco Bux (or other null-biome animals)
-  if (Animal.all['discobux']) animalsInBiome.push(Animal.all['discobux'])
+    this.reset();
+    this.biome = biome;
+    this.grid.setBiome(biome);
 
-  _.each(animalsInBiome, function(animal) {
-    _.each(animal.tiles, function(tile) {
-      var x = tile[0], y = tile[1]
+    // save the animals currently in the biome
+    var animalsInBiome = Animal.inBiome(biome);
+    animalsInBiome.push(Animal.all['discobux']); // optional, for universal animals
 
-      // only place if coordinates are within the grid
-      if (x >= 0 && x < this.grid.columns && y >= 0 && y < this.grid.rows) {
-        var cell = this.grid.at(x, y)
-        if (cell) {
-          cell.setSelected(true)
-          cell.setAnimal(animal)
+    this.animals = animalsInBiome;
+
+    // assign animals to buttons safely
+    _.each(this.animals, function (animal, index) {
+        if (self.animalButtons && self.animalButtons[index]) {
+            self.animalButtons[index].setAnimal(animal);
         }
-      }
-    }, this)
-  }, this)
-
-  // save the animals currently in the biome
-  this.animals = animalsInBiome
+    });
 }
 
-
-    _.each(this.animals, function (animal, index) {
-      self.animalButtons[index].setAnimal(animal)
-    })
-  }
-
-  var allPossibleArrangements = function () {
-    var knownAnimalTiles = {}
-    var emptyTiles = []
+// Properly declare the helper function
+ZooFinder.prototype.allPossibleArrangements = function () {
+    var knownAnimalTiles = {};
+    var emptyTiles = [];
 
     this.grid.each(function (cell, col, row) {
-      var tiles
-      if (cell.animal) {
-        tiles = knownAnimalTiles[cell.animal.identifier]
-        if (!tiles)
-          knownAnimalTiles[cell.animal.identifier] = tiles = []
+        var tiles;
+        if (cell.animal) {
+            tiles = knownAnimalTiles[cell.animal.identifier];
+            if (!tiles) {
+                tiles = [];
+                knownAnimalTiles[cell.animal.identifier] = tiles;
+            }
+            tiles.push([col, row]);
+        } else {
+            emptyTiles.push([col, row]);
+        }
+    });
 
-        tiles.push([col, row])
-      } else if (cell.selected) {
-        emptyTiles.push([col, row])
-      }
-    })
+    // return something useful if needed
+    return {
+        knownAnimalTiles: knownAnimalTiles,
+        emptyTiles: emptyTiles
+    };
+}
 
-    return this.grid.findArrangementsForAnimals(this.selectedAnimals, knownAnimalTiles, emptyTiles)
-  }
 
   ZooFinder.prototype.displayProbabilities = function () {
     var arrangements = allPossibleArrangements.call(this)
