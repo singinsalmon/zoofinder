@@ -102,23 +102,31 @@ if (currentGroup) animalList.append(currentGroup)
 // ---------- Animal selection handler ----------
 animalList.change(function() {
   var value = $(this).val()
-  grid.reset()
+  grid.reset()  // clear previous selection
 
-  if (!value) return
+  if (!value) return  // nothing selected
 
   var animal = Animal.all[value]
-  zoofinder.setBiome(animal.biome)
 
-  // Place tiles safely
+  // Set the biome if it exists
+  if (animal.biome) {
+    zoofinder.setBiome(animal.biome)
+  }
+
+  // Place animal tiles safely
   _.each(animal.tiles, function(tile) {
-    var cell = grid.at(tile[0], tile[1])
-    if (cell) {                   // <-- safe check
-      cell.setSelected(true)
-      cell.setAnimal(animal)
+    var x = tile[0], y = tile[1]
+
+    // only place if coordinates are within the grid
+    if (x >= 0 && x < grid.columns && y >= 0 && y < grid.rows) {
+      var cell = grid.at(x, y)
+      if (cell) {
+        cell.setSelected(true)
+        cell.setAnimal(animal)
+      }
     }
   })
 })
-
 
   // biome list
   _.each(Biome.ordered, function(biome) {
