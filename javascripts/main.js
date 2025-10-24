@@ -63,7 +63,7 @@ $(function() {
   grid = new ZooGrid('#zoo')
   zoofinder = new ZooFinder(grid)
 
-  // ---------- Animal list setup ----------
+// ---------- Animal list setup ----------
 var animalList = $('#animal-list')
 animalList.append('<option value="">Choose an animal...</option>')
 
@@ -71,18 +71,12 @@ animalList.append('<option value="">Choose an animal...</option>')
 var rarityOrder = ['common', 'rare', 'mythical', 'timeless', 'pet', 'bux']
 
 // Sort animals by biome (alphabetical), then rarity, then name
-var sortedAnimals = _.orderBy(
-  Animal.ordered,
-  [
-    function(animal) { return animal.biome ? animal.biome.name : 'zzz' },   // biome (null last)
-    function(animal) { 
-      var index = rarityOrder.indexOf(animal.rarity)
-      return index !== -1 ? index : 999
-    },                                                                       // rarity
-    'name'                                                                     // name
-  ],
-  ['asc', 'asc', 'asc']
-)
+var sortedAnimals = _.sortBy(Animal.ordered, function(animal) {
+  var biomeName = animal.biome ? animal.biome.name : 'zzz'   // null biome last
+  var rarityIndex = rarityOrder.indexOf(animal.rarity)
+  if (rarityIndex === -1) rarityIndex = 999                   // unknown rarity at end
+  return [biomeName, rarityIndex, animal.name]
+})
 
 // Group by biome and append to dropdown
 var currentBiomeName = null
@@ -124,6 +118,7 @@ animalList.change(function() {
     }
   })
 })
+
 
   // biome list
   _.each(Biome.ordered, function(biome) {
