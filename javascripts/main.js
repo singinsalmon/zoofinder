@@ -73,12 +73,15 @@ $(function() {
   // Sort animals by rarity and then biome name
 var rarityOrder = ['common', 'rare', 'mythical', 'timeless', 'pet', 'bux'];
 
-var sortedAnimals = _.sortBy(Animal.ordered, function(animal) {
-  var rarityIndex = rarityOrder.indexOf(animal.rarity);
-  if (rarityIndex === -1) rarityIndex = 999; // unknown rarities at the end
-  var biomeName = animal.biome ? animal.biome.name : ''; // handle null biome
-  return [biomeName, rarityIndex, animal.name];
-});
+var sortedAnimals = _.orderBy(
+  Animal.ordered,
+  [
+    function(animal) { return animal.biome ? animal.biome.name : 'zzz'; }, // biome (null goes last)
+    function(animal) { return rarityOrder.indexOf(animal.rarity) !== -1 ? rarityOrder.indexOf(animal.rarity) : 999; }, // rarity
+    'name' // alphabetical by name
+  ],
+  ['asc', 'asc', 'asc'] // all ascending
+);
 
 // Group animals by biome name (so null ones go last)
 var currentBiomeName = null;
